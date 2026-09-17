@@ -1,0 +1,2211 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Pemantauan Inisiatif 1 - 17 COE AI Sektor Awam</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS for Google Sheets / Excel import -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            govblue: {
+              700: '#1e293b',
+              800: '#0f172a',
+              900: '#020617',
+            },
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f8fafc; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- HEADER NAVIGATION -->
+  <header class="bg-govblue-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo & Branding -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-blue-400 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-[10px] font-extrabold tracking-wider px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase">Pusat Kecemerlangan AI (COE AI)</span>
+              <span class="text-[11px] text-slate-400 hidden sm:inline">JPA • INTAN Malaysia</span>
+            </div>
+            <h1 class="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-1.5">
+              Sistem Pemantauan Milestone Inisiatif 1 hingga 17
+            </h1>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center space-x-2 sm:space-x-3 no-print">
+          <input type="file" id="directExcelFileQuickInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelFileUpload(event)">
+          <button onclick="document.getElementById('directExcelFileQuickInput').click()" class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-900 bg-emerald-400 hover:bg-emerald-300 transition shadow-sm cursor-pointer animate-pulse" title="Muat naik fail PMO - MILESTONE INISIATIF COE AI.xlsx">
+            <svg class="w-3.5 h-3.5 mr-1.5 text-emerald-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            Muat Naik Fail PMO (.xlsx)
+          </button>
+          <button onclick="openImportModal()" class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold text-amber-900 bg-amber-400 hover:bg-amber-300 transition shadow-sm cursor-pointer">
+            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+            </svg>
+            Import / Tampal Sheet
+          </button>
+          <button onclick="window.print()" class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition border border-slate-700 cursor-pointer">
+            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+            </svg>
+            Cetak PDF
+          </button>
+          <button onclick="exportCurrentCSV()" class="inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 transition shadow-sm shadow-indigo-600/30 cursor-pointer">
+            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Eksport CSV
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- QUICK SELECTOR STRIP -->
+  <div class="bg-white border-b border-slate-200 py-3 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <!-- Quick Selector Dropdown -->
+        <div class="flex flex-wrap items-center gap-3">
+          <label for="initiativeSelect" class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            Pilih Inisiatif:
+          </label>
+          <div class="relative">
+            <select id="initiativeSelect" onchange="onInitiativeChange(this.value)" class="text-xs font-semibold bg-slate-100 hover:bg-slate-200/80 border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition cursor-pointer pr-9">
+              <!-- Populated via JS for Inisiatif 1 - 17 -->
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
+          <span id="initiativeBadgeStatus" class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+            ON TRACK
+          </span>
+        </div>
+
+        <!-- Global Project Meta -->
+        <div class="flex flex-wrap items-center gap-4 text-xs text-slate-600">
+          <div><span class="text-slate-400">Tempoh Keseluruhan:</span> <strong class="text-slate-800">2026 – 2029</strong></div>
+          <div><span class="text-slate-400">Jumlah Inisiatif:</span> <strong class="text-indigo-600 font-bold">17 Inisiatif</strong></div>
+          <div><span class="text-slate-400">Inisiatif Terisi Penuh:</span> <strong id="headerDataReadyCount" class="text-emerald-600 font-bold">1 / 17 Inisiatif</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <div class="bg-slate-100 border-b border-slate-200 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav class="flex space-x-6 text-xs sm:text-sm font-semibold" aria-label="Tabs">
+        <button onclick="switchView('master-portfolio')" id="tab-master-portfolio" class="py-3 px-1 border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+          Ringkasan Portfolio (17 Inisiatif)
+        </button>
+        <button onclick="switchView('initiative-detail')" id="tab-initiative-detail" class="py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 flex items-center gap-2 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+          Perincian Inisiatif Terpilih
+        </button>
+        <button onclick="switchView('gantt-matrix')" id="tab-gantt-matrix" class="py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 flex items-center gap-2 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          Matriks Garis Masa Mingguan (Gantt)
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- VIEW 1: MASTER PORTFOLIO (INISIATIF 1 - 17 OVERVIEW) -->
+    <div id="view-master-portfolio" class="space-y-6">
+
+      <!-- Executive Portfolio KPIs (DYNAMICALLY COMPUTED) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between text-slate-400">
+            <span class="text-xs font-bold uppercase tracking-wider">Jumlah Inisiatif</span>
+            <span class="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            </span>
+          </div>
+          <div class="mt-3 flex items-baseline justify-between">
+            <span class="text-3xl font-extrabold text-slate-900">17</span>
+            <span id="master-kpi-active-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">1 Terisi Penuh</span>
+          </div>
+          <p class="mt-2 text-xs text-slate-500" id="master-kpi-sub-initiatives">1 Data Penuh • 16 Draf Rangka Kerja</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between text-slate-400">
+            <span class="text-xs font-bold uppercase tracking-wider">Kemajuan Keseluruhan Portfolio</span>
+            <span class="p-2 rounded-xl bg-emerald-50 text-emerald-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </span>
+          </div>
+          <div class="mt-3 flex items-baseline justify-between">
+            <span class="text-3xl font-extrabold text-emerald-600" id="master-kpi-ini1-pct">0.0%</span>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800" id="master-kpi-task-counts">0 / 0 Aktiviti</span>
+          </div>
+          <div class="mt-3 w-full bg-slate-100 rounded-full h-2">
+            <div id="master-kpi-progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <p class="mt-2 text-xs text-slate-500" id="master-kpi-sub-progress">Inisiatif 1: 38.46% siap</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between text-slate-400">
+            <span class="text-xs font-bold uppercase tracking-wider">Jumlah Komitmen Belanjawan</span>
+            <span class="p-2 rounded-xl bg-purple-50 text-purple-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </span>
+          </div>
+          <div class="mt-3 flex items-baseline justify-between">
+            <span class="text-3xl font-extrabold text-slate-900" id="master-kpi-total-cost">RM 0</span>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800" id="master-kpi-costed-tasks-badge">0 Aktiviti Berkos</span>
+          </div>
+          <p class="mt-2 text-xs text-slate-500" id="master-kpi-sub-cost">Merangkumi peruntukan keseluruhan inisiatif COE AI</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between text-slate-400">
+            <span class="text-xs font-bold uppercase tracking-wider">Status Prestasi Portfolio</span>
+            <span class="p-2 rounded-xl bg-blue-50 text-blue-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </span>
+          </div>
+          <div class="mt-3 flex items-baseline justify-between">
+            <span class="text-2xl font-extrabold text-emerald-600" id="master-kpi-overall-status">MEMUASKAN</span>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800" id="master-kpi-active-count-badge">1 Aktif</span>
+          </div>
+          <p class="mt-2 text-xs text-slate-500" id="master-kpi-sub-status">Semua milestone berjalan lancar mengikut perancangan</p>
+        </div>
+      </div>
+
+      <!-- Portfolio Charts (NOW DYNAMIC) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Taburan Status 17 Inisiatif COE AI</h2>
+              <p class="text-xs text-slate-500">Pecahan bilangan aktiviti: Selesai, Dalam Pelaksanaan dan Perancangan</p>
+            </div>
+            <span class="text-xs bg-slate-100 px-3 py-1 rounded-full text-slate-600 font-semibold">17 Inisiatif</span>
+          </div>
+          <div class="relative w-full h-64">
+            <canvas id="portfolioStatusBarChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 mb-1">Status Kesediaan Data</h2>
+            <p class="text-xs text-slate-500 mb-4">Perbandingan inisiatif data sebenar vs draf templat</p>
+            <div class="relative w-full h-48 flex items-center justify-center">
+              <canvas id="portfolioDataDonutChart"></canvas>
+            </div>
+          </div>
+          <div class="mt-4 p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-xs text-indigo-900">
+            <strong>Petunjuk:</strong> Inisiatif 2 hingga 17 boleh dikemas kini dengan mengimport fail PMO Excel atau menampal data pada bila-bila masa.
+          </div>
+        </div>
+      </div>
+
+      <!-- Master Index Table -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Matriks Indeks Kesemua 17 Inisiatif COE AI</h2>
+            <p class="text-xs text-slate-500">Klik butang "Buka Pemantauan" untuk memeriksa aktiviti atau menambah maklumat</p>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <input type="text" id="portfolioSearchInput" onkeyup="filterMasterPortfolioTable()" placeholder="Cari nama inisiatif..." class="pl-3 pr-3 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-56">
+          </div>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+          <table class="w-full text-xs text-left divide-y divide-slate-200">
+            <thead class="bg-slate-50 text-slate-700 font-semibold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th class="py-3 px-3 text-center w-12">No</th>
+                <th class="py-3 px-3">Tajuk Inisiatif</th>
+                <th class="py-3 px-3 text-center">Status Data</th>
+                <th class="py-3 px-3 text-center">Bil. Aktiviti</th>
+                <th class="py-3 px-3 text-right">Anggaran Kos</th>
+                <th class="py-3 px-3 text-center">Kemajuan</th>
+                <th class="py-3 px-3 text-center">Status Pelaksanaan</th>
+                <th class="py-3 px-3 text-center no-print w-28">Tindakan</th>
+              </tr>
+            </thead>
+            <tbody id="masterPortfolioTableBody" class="divide-y divide-slate-200 bg-white">
+              <!-- Dynamically populated from JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: INITIATIVE DRILL-DOWN & DETAILED MANAGEMENT -->
+    <div id="view-initiative-detail" class="hidden space-y-6">
+
+      <!-- Active Initiative Header Card -->
+      <div class="bg-gradient-to-r from-govblue-900 to-indigo-900 rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center space-x-2 text-indigo-300 text-xs font-semibold mb-1">
+            <span class="px-2 py-0.5 bg-indigo-800/80 rounded border border-indigo-400/30" id="detailInitiativeTag">INISIATIF 1</span>
+            <span id="detailInitiativeMeta">Fasa 2026 - 2029 • COE AI INTAN/JPA</span>
+          </div>
+          <h2 class="text-lg sm:text-xl font-bold text-white tracking-tight" id="detailInitiativeTitle">
+            Kerangka Kompetensi AI Sektor Awam
+          </h2>
+          <p class="text-xs text-slate-300 mt-1 max-w-3xl" id="detailInitiativeDesc">
+            Membangunkan, mengesahkan, melancarkan dan menggunapakai kerangka kompetensi AI holistik merentasi perkhidmatan awam Malaysia.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 no-print">
+          <button onclick="openAddActivityModal()" class="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition cursor-pointer">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Tambah Aktiviti
+          </button>
+          <button onclick="switchView('master-portfolio')" class="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer">
+            ← Kembali ke Indeks
+          </button>
+        </div>
+      </div>
+
+      <!-- Specific Initiative KPI Summary -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+          <span class="text-xs font-semibold text-slate-400 uppercase">Aktiviti Siap</span>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span class="text-2xl font-bold text-slate-900" id="detail-kpi-count">5 / 13</span>
+            <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full" id="detail-kpi-count-percent">38.46%</span>
+          </div>
+          <div class="mt-3 w-full bg-slate-100 rounded-full h-1.5">
+            <div class="bg-emerald-500 h-1.5 rounded-full" id="detail-kpi-count-bar" style="width: 38.46%"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+          <span class="text-xs font-semibold text-slate-400 uppercase">Pemberat Masa (Fizikal)</span>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span class="text-2xl font-bold text-slate-900" id="detail-kpi-weight">8.39%</span>
+            <span class="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full" id="detail-kpi-days">181 / 2,157 Hari</span>
+          </div>
+          <div class="mt-3 w-full bg-slate-100 rounded-full h-1.5">
+            <div class="bg-blue-600 h-1.5 rounded-full" id="detail-kpi-weight-bar" style="width: 8.39%"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+          <span class="text-xs font-semibold text-slate-400 uppercase">Jumlah Peruntukan</span>
+          <div class="mt-2 flex items-baseline justify-between">
+            <span class="text-2xl font-bold text-indigo-900" id="detail-kpi-cost">RM 150,000</span>
+            <span class="text-xs font-medium text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full" id="detail-kpi-cost-badge">4 Aktiviti Berkos</span>
+          </div>
+          <div class="mt-3 text-[11px] text-slate-400" id="detail-kpi-cost-sub">Peruntukan khusus inisiatif terpilih</div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+          <span class="text-xs font-semibold text-slate-400 uppercase">Status Semasa</span>
+          <div class="mt-2">
+            <span id="detail-kpi-status-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+              ON TRACK
+            </span>
+          </div>
+          <p class="mt-2 text-xs text-slate-400" id="detail-kpi-current-task">Aktiviti Sedang Berjalan</p>
+        </div>
+      </div>
+
+      <!-- S-Curve and Cost breakdown -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" id="detail-analytics-container">
+        <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col justify-between">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                Carta S-Curve Kemajuan (Dirancang vs Sebenar)
+              </h3>
+              <p class="text-xs text-slate-500">Trajektori kumulatif % pemberat tempoh masa inisiatif</p>
+            </div>
+            <div class="flex items-center space-x-3 text-xs">
+              <span class="inline-flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 mr-1.5"></span> Rancang</span>
+              <span class="inline-flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-indigo-600 mr-1.5"></span> Sebenar</span>
+            </div>
+          </div>
+          <div class="relative w-full h-64">
+            <canvas id="detailScurveChart"></canvas>
+          </div>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <span>Varians Jadual Semasa: <strong id="scurveVarianceText" class="text-emerald-600">0.00% (Terkawal)</strong></span>
+            <span>Tahun Pemantauan: <strong class="text-slate-800">2026 - 2029</strong></span>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 mb-1">Agihan Belanjawan Aktiviti</h3>
+            <p class="text-xs text-slate-500 mb-3">Pecahan peruntukan kos yang diluluskan</p>
+            <div class="relative w-full h-44 flex items-center justify-center">
+              <canvas id="detailCostChart"></canvas>
+            </div>
+          </div>
+          <div id="detailCostList" class="mt-3 space-y-1 text-xs max-h-40 overflow-y-auto">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Specific Initiative Task Table -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-slate-900" id="tableHeaderTitle">Senarai Aktiviti: Inisiatif 1</h3>
+            <p class="text-xs text-slate-500">Pantau tarikh mula/tamat, tempoh hari, peratus pemberat serta status pelaksanaan</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <input type="text" id="taskSearchInput" onkeyup="filterCurrentInitiativeTasks()" placeholder="Cari aktiviti..." class="px-3 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-44">
+            <select id="taskStatusFilter" onchange="filterCurrentInitiativeTasks()" class="text-xs border border-slate-300 rounded-xl px-2.5 py-1.5 bg-white text-slate-700">
+              <option value="ALL">Semua Status</option>
+              <option value="SELESAI">SELESAI</option>
+              <option value="DALAM PELAKSANAAN">DALAM PELAKSANAAN</option>
+              <option value="BELUM MULA">BELUM MULA</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+          <table class="w-full text-xs text-left divide-y divide-slate-200">
+            <thead class="bg-slate-50 text-slate-700 font-semibold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th class="py-3 px-3 text-center w-10">Bil</th>
+                <th class="py-3 px-3">Aktiviti Utama</th>
+                <th class="py-3 px-3 text-right">Kos (RM)</th>
+                <th class="py-3 px-3 text-center">Tarikh Sasaran</th>
+                <th class="py-3 px-3 text-center">Tarikh Pelaksanaan</th>
+                <th class="py-3 px-3 text-center">Tempoh (Hari)</th>
+                <th class="py-3 px-3 text-center">Pemberat %</th>
+                <th class="py-3 px-3 text-center">Status</th>
+                <th class="py-3 px-3 text-center no-print w-20">Tindakan</th>
+              </tr>
+            </thead>
+            <tbody id="detailTasksTableBody" class="divide-y divide-slate-200 bg-white">
+              <!-- Dynamically rendered -->
+            </tbody>
+            <tfoot class="bg-slate-50 font-bold text-slate-800 text-xs border-t-2 border-slate-200" id="detailTasksTableFoot">
+              <!-- Dynamically rendered totals -->
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 3: MASTER GANTT / TIMELINE MATRIX -->
+    <div id="view-gantt-matrix" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              Matriks Garis Masa Mingguan (Format Helaian Excel COE AI)
+            </h2>
+            <p class="text-xs text-slate-500">Pecahan jadual mengikut Minggu (M1 - M4) bagi aktiviti inisiatif yang sedang dipilih</p>
+          </div>
+          <div class="flex items-center gap-3 text-xs font-medium">
+            <span class="inline-flex items-center"><span class="w-3 h-3 rounded bg-emerald-500 mr-1.5"></span> Selesai</span>
+            <span class="inline-flex items-center"><span class="w-3 h-3 rounded bg-amber-500 mr-1.5"></span> Sedang Laksana</span>
+            <span class="inline-flex items-center"><span class="w-3 h-3 rounded bg-indigo-200 mr-1.5"></span> Dirancang</span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+          <table class="w-full text-xs text-left border-collapse min-w-[1100px]">
+            <thead>
+              <tr class="bg-slate-800 text-white divide-x divide-slate-700 text-center">
+                <th rowspan="2" class="py-2.5 px-3 w-10">Bil</th>
+                <th rowspan="2" class="py-2.5 px-3 text-left w-72">Aktiviti Inisiatif Terpilih</th>
+                <th colspan="4" class="py-1 px-1 bg-slate-700">JUN '26</th>
+                <th colspan="4" class="py-1 px-1 bg-slate-800">JUL '26</th>
+                <th colspan="4" class="py-1 px-1 bg-slate-700">OGOS '26</th>
+                <th colspan="4" class="py-1 px-1 bg-slate-800">SEPT '26</th>
+                <th colspan="4" class="py-1 px-1 bg-slate-700">OKT '26</th>
+                <th colspan="4" class="py-1 px-1 bg-slate-800">NOV '26</th>
+                <th colspan="4" class="py-1 px-1 bg-slate-700">DIS '26</th>
+                <th colspan="4" class="py-1 px-1 bg-slate-800">JAN '27</th>
+                <th rowspan="2" class="py-2.5 px-2 bg-slate-900 text-indigo-300 w-20">Tempoh</th>
+              </tr>
+              <tr class="bg-slate-100 text-slate-600 divide-x divide-slate-200 text-center font-bold text-[10px]">
+                <th class="p-1">M1</th><th class="p-1">M2</th><th class="p-1">M3</th><th class="p-1">M4</th>
+                <th class="p-1">M1</th><th class="p-1">M2</th><th class="p-1">M3</th><th class="p-1">M4</th>
+                <th class="p-1">M1</th><th class="p-1">M2</th><th class="p-1">M3</th><th class="p-1">M4</th>
+                <th class="p-1">M1</th><th class="p-1">M2</th><th class="p-1">M3</th><th class="p-1">M4</th>
+                <th class="p-1">M1</th><th class="p-1">M2</th><th class="p-1">M3</th><th class="p-1">M4</th>
+                <th class="p-1">M1</th><th class="p-1">M2</th><th class="p-1">M3</th><th class="p-1">M4</th>
+                <th class="p-1">M1</th><th class="p-1">M2</th><th class="p-1">M3</th><th class="p-1">M4</th>
+                <th class="p-1">M1</th><th class="p-1">M2</th><th class="p-1">M3</th><th class="p-1">M4</th>
+              </tr>
+            </thead>
+            <tbody id="masterTimelineMatrixBody" class="divide-y divide-slate-200 bg-white">
+              <!-- Dynamically populated from JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL FOR EDITING / ADDING ACTIVITY -->
+  <div id="activityModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="text-sm font-bold text-slate-900" id="activityModalTitle">Kemaskini Maklumat Aktiviti</h3>
+        <button onclick="closeActivityModal()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="mt-4 space-y-3.5 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Nama / Keterangan Aktiviti</label>
+          <input type="text" id="modalInputName" class="w-full border border-slate-300 rounded-xl p-2.5 focus:ring-2 focus:ring-indigo-500 text-xs">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Anggaran Kos (RM)</label>
+            <input type="number" id="modalInputCost" min="0" step="1000" class="w-full border border-slate-300 rounded-xl p-2.5 focus:ring-2 focus:ring-indigo-500 text-xs">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Status Aktiviti</label>
+            <select id="modalInputStatus" class="w-full border border-slate-300 rounded-xl p-2.5 focus:ring-2 focus:ring-indigo-500 text-xs bg-white">
+              <option value="SELESAI">SELESAI</option>
+              <option value="DALAM PELAKSANAAN">DALAM PELAKSANAAN</option>
+              <option value="BELUM MULA">BELUM MULA</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Tarikh Sasaran Mula</label>
+            <input type="date" id="modalInputTargetStart" class="w-full border border-slate-300 rounded-xl p-2 focus:ring-2 focus:ring-indigo-500 text-xs">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Tarikh Sasaran Tamat</label>
+            <input type="date" id="modalInputTargetEnd" class="w-full border border-slate-300 rounded-xl p-2 focus:ring-2 focus:ring-indigo-500 text-xs">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Tarikh Laksana Mula (Sebenar)</label>
+            <input type="date" id="modalInputActualStart" class="w-full border border-slate-300 rounded-xl p-2 focus:ring-2 focus:ring-indigo-500 text-xs">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Tarikh Laksana Tamat (Sebenar)</label>
+            <input type="date" id="modalInputActualEnd" class="w-full border border-slate-300 rounded-xl p-2 focus:ring-2 focus:ring-indigo-500 text-xs">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Tempoh Hari (Rancang)</label>
+          <input type="number" id="modalInputDays" min="1" class="w-full border border-slate-300 rounded-xl p-2.5 focus:ring-2 focus:ring-indigo-500 text-xs">
+        </div>
+      </div>
+
+      <div class="mt-6 flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
+        <button onclick="closeActivityModal()" class="px-3.5 py-2 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-50 text-xs font-medium cursor-pointer">Batal</button>
+        <button onclick="saveActivityModalData()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 text-xs font-semibold shadow-sm transition cursor-pointer">Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPORT DATA MODAL (EXCEL / GOOGLE SHEET) -->
+  <div id="importModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            Import Data daripada Google Sheet / Fail Excel
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">Muat naik fail <code class="bg-slate-100 px-1 py-0.5 rounded">.xlsx</code> / <code class="bg-slate-100 px-1 py-0.5 rounded">.csv</code> atau salin &amp; tampal terus data anda.</p>
+        </div>
+        <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Import Mode Tabs -->
+      <div class="mt-4 flex border-b border-slate-200 text-xs font-semibold">
+        <button id="importTabBtnFile" onclick="setImportMode('file')" class="pb-2 px-3 border-b-2 border-indigo-600 text-indigo-600 cursor-pointer">
+          Muat Naik Fail Excel / CSV (.xlsx)
+        </button>
+        <button id="importTabBtnPaste" onclick="setImportMode('paste')" class="pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 cursor-pointer">
+          Salin &amp; Tampal (Clipboard)
+        </button>
+      </div>
+
+      <!-- Destination Initiative Target -->
+      <div class="mt-4 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <label class="font-bold text-slate-700 block">Sasaran Inisiatif:</label>
+          <span class="text-[11px] text-slate-500">Pilih inisiatif yang hendak digantikan datanya, atau biarkan auto jika fail mengandungi helaian berbilang.</span>
+        </div>
+        <select id="importTargetInitiative" class="border border-slate-300 rounded-lg p-2 font-semibold text-xs bg-white focus:ring-2 focus:ring-indigo-500">
+          <option value="auto">Auto-Kesan Mengikut Helaian / Lajur</option>
+          <!-- Populated by JS for Inisiatif 1 - 17 -->
+        </select>
+      </div>
+
+      <!-- TAB 1: FILE DROP -->
+      <div id="importSectionFile" class="mt-4 space-y-3">
+        <div class="border-2 border-dashed border-indigo-300 hover:border-indigo-600 bg-indigo-50/30 hover:bg-indigo-50/70 rounded-2xl p-6 text-center cursor-pointer transition" onclick="document.getElementById('excelFileInput').click()">
+          <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelFileUpload(event)">
+          <div class="w-12 h-12 mx-auto mb-2 text-indigo-600 flex items-center justify-center bg-indigo-100 rounded-xl shadow-xs">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          </div>
+          <p class="text-xs font-bold text-slate-800">Pilih fail <span class="text-indigo-600">PMO - MILESTONE INISIATIF COE AI.xlsx</span></p>
+          <p class="text-[11px] text-slate-500 mt-1">Sistem menyokong fail multi-sheet (Inisiatif 1 - 17) atau helaian Master PMO tunggal berserta lajur mingguan M1-M4.</p>
+          <div id="selectedFileName" class="mt-3 text-xs font-bold text-emerald-700 bg-emerald-50 py-1.5 px-3 rounded-lg border border-emerald-200 inline-block hidden"></div>
+        </div>
+      </div>
+
+      <!-- TAB 2: PASTE TEXT -->
+      <div id="importSectionPaste" class="mt-4 space-y-3 hidden">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Tampal baris jadual dari Google Sheet (Ctrl+V):</label>
+          <p class="text-[11px] text-slate-500 mb-2">Buka Google Sheet anda, tandakan baris atau lajur data, tekan <kbd class="px-1 py-0.5 bg-slate-200 rounded">Ctrl+C</kbd>, kemudian tampal di bawah:</p>
+          <textarea id="importPasteArea" rows="7" placeholder="Aktiviti&#9;Kos&#9;Tarikh Sasaran Mula&#9;Tarikh Sasaran Tamat&#9;Status..." class="w-full text-xs font-mono p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+        <button onclick="processPastedData()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition shadow-sm cursor-pointer">
+          Proses Data Ditampal
+        </button>
+      </div>
+
+      <!-- Helper info -->
+      <div class="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 space-y-1">
+        <p class="font-bold">💡 Petua Cara Mengambil Data Dari Google Sheets:</p>
+        <p>1. Dalam Google Sheets anda, klik <strong>File &gt; Download &gt; Microsoft Excel (.xlsx)</strong>.</p>
+        <p>2. Muat naik fail tersebut di atas. Semua formula, milestone, dan status akan dikemas kini secara automatik dalam papan pemuka.</p>
+      </div>
+
+      <div class="mt-5 flex items-center justify-between pt-3 border-t border-slate-100">
+        <button onclick="resetToSampleData()" class="text-xs text-rose-600 hover:text-rose-700 font-medium cursor-pointer">
+          Pulihkan Data Piawai
+        </button>
+        <div class="flex items-center space-x-2">
+          <button onclick="closeImportModal()" class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-50 cursor-pointer">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-xl shadow-xl transition-opacity duration-300 opacity-0 pointer-events-none z-50 flex items-center gap-2">
+    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <span id="toastMsg">Kemaskini berjaya!</span>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-4 mt-auto text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div>Pusat Kecemerlangan Kecerdasan Buatan (COE AI) • Kerajaan Malaysia © 2026</div>
+      <div class="text-slate-400">Penyelarasan Pemantauan Inisiatif 1 hingga 17</div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT ENGINE -->
+  <script>
+    // Standard Initiative Meta Directory (Inisiatif 1 to 17)
+    const initiativeMetadata = [
+      { id: 1, code: "INISIATIF 1", title: "Kerangka Kompetensi AI Sektor Awam", desc: "Membangunkan, mengesahkan, dan menggunapakai kerangka kompetensi AI sektor awam secara holistik.", hasData: true },
+      { id: 2, code: "INISIATIF 2", title: "Garis Panduan Tadbir Urus & Etika AI Sektor Awam", desc: "Penetapan prinsip etika, ketelusan, dan akuntabiliti penggunaan algoritma AI dalam perkhidmatan awam.", hasData: false },
+      { id: 3, code: "INISIATIF 3", title: "Pembangunan Platform Sandbox AI Sektor Awam", desc: "Persekitaran ujian terkawal (sandbox) bagi menguji inovasi AI agensi sebelum guna pakai menyeluruh.", hasData: false },
+      { id: 4, code: "INISIATIF 4", title: "Repositori Model & Data Latihan AI Bersepadu", desc: "Pusat perkongsian dataset dan model asas AI yang mematuhi keselamatan dan kedaulatan data.", hasData: false },
+      { id: 5, code: "INISIATIF 5", title: "Program Pemerkasaan AI Talent & Pensijilan Pegawai Awam", desc: "Pentauliahan kemahiran AI berperingkat daripada tahap asas, perantara hingga pakar teknikal.", hasData: false },
+      { id: 6, code: "INISIATIF 6", title: "Pusat Khidmat Nasihat & Konsultansi AI Agensi", desc: "Bantuan teknikal dan konsultansi seni bina penyelesaian AI kepada kementerian dan jabatan.", hasData: false },
+      { id: 7, code: "INISIATIF 7", title: "Pengauditan Keselamatan & Ketelusan Algoritma AI", desc: "Pemeriksaan berterusan terhadap model AI daripada aspek keselamatan siber dan bias data.", hasData: false },
+      { id: 8, code: "INISIATIF 8", title: "Pelaksanaan Proof-of-Concept (PoC) AI Berimpak Tinggi", desc: "Pembiayaan dan sokongan PoC bagi projek rintis perkhidmatan berorientasikan rakyat.", hasData: false },
+      { id: 9, code: "INISIATIF 9", title: "Kerjasama Strategik Industri & Akademia AI", desc: "Jaringan kolaborasi bersama universiti tempatan dan peneraju teknologi AI global.", hasData: false },
+      { id: 10, code: "INISIATIF 10", title: "Rangka Kerja Standard Penggunaan AI Generatif (GenAI)", desc: "Garis panduan standard penggunaan LLM dan alatan GenAI bagi pegawai perkhidmatan awam.", hasData: false },
+      { id: 11, code: "INISIATIF 11", title: "Portal & Hab Sumber Pengetahuan AI COE", desc: "Platform digital berpusat bagi penyebaran kajian kes, panduan teknikal, dan modul AI.", hasData: false },
+      { id: 12, code: "INISIATIF 12", title: "Pemantauan & Penilaian Prestasi Impak AI Sektor Awam", desc: "Metrik penilaian nilai faedah pelaburan (ROI) dan produktiviti pelaksanaan projek AI.", hasData: false },
+      { id: 13, code: "INISIATIF 13", title: "Seni Bina Awan (Cloud Infrastructure) Pengkomputeran AI", desc: "Penyediaan prasarana GPU dan pengkomputeran prestasi tinggi kerajaan berpusat.", hasData: false },
+      { id: 14, code: "INISIATIF 14", title: "Polisi Perkongsian Data Kerajaan Untuk Latihan AI", desc: "Piawaian interoperabiliti perkongsian data terbuka dan data sulit merentas agensi.", hasData: false },
+      { id: 15, code: "INISIATIF 15", title: "Ekosistem GovTech AI Hackathon & Cabaran Inovasi", desc: "Pertandingan inovasi berkala bagi mencungkil bakat dalaman menyelesaikan masalah awam.", hasData: false },
+      { id: 16, code: "INISIATIF 16", title: "Program AI Literacy & Kesedaran Kepimpinan Tertinggi", desc: "Bengkel kepimpinan strategik AI untuk Ketua Setiausaha (KSU) dan Ketua Pengarah (KP).", hasData: false },
+      { id: 17, code: "INISIATIF 17", title: "Mekanisme Pembiayaan & Dana Inovasi AI Agensi", desc: "Struktur tadbir urus dana khas pembangunan AI sektor awam jangka panjang.", hasData: false }
+    ];
+
+    // Verified Initiative 1 Activities from Excel
+    const inisiatif1Tasks = [
+      {
+        bil: 1,
+        aktiviti: "Merancang Keperluan Kerangka Kompetensi AI Sektor Awam",
+        kos: 0,
+        sasaranMula: "2026-06-01",
+        sasaranTamat: "2026-06-15",
+        laksanaMula: "2026-06-01",
+        laksanaTamat: "2026-06-15",
+        tempohRancang: 14,
+        tempohSelesai: 14,
+        peratusRancang: 0.006490496059,
+        peratusSemasa: 0.006490496059,
+        status: "SELESAI",
+        weeks: { "JUN_M1": true, "JUN_M2": true }
+      },
+      {
+        bil: 2,
+        aktiviti: "Menandaaras Kerangka Kompetensi AI Sektor Awam Sedia Ada Industri",
+        kos: 0,
+        sasaranMula: "2026-06-15",
+        sasaranTamat: "2026-07-31",
+        laksanaMula: "2026-06-15",
+        laksanaTamat: "2026-07-31",
+        tempohRancang: 46,
+        tempohSelesai: 46,
+        peratusRancang: 0.021325915624,
+        peratusSemasa: 0.021325915624,
+        status: "SELESAI",
+        weeks: { "JUN_M3": true, "JUN_M4": true, "JUL_M1": true, "JUL_M2": true, "JUL_M3": true, "JUL_M4": true }
+      },
+      {
+        bil: 3,
+        aktiviti: "Pemetaan Kumpulan dan Kompetensi Penjawat Awam dengan Peranan AI",
+        kos: 0,
+        sasaranMula: "2026-06-15",
+        sasaranTamat: "2026-07-31",
+        laksanaMula: "2026-06-15",
+        laksanaTamat: "2026-07-31",
+        tempohRancang: 46,
+        tempohSelesai: 46,
+        peratusRancang: 0.021325915624,
+        peratusSemasa: 0.021325915624,
+        status: "SELESAI",
+        weeks: { "JUN_M3": true, "JUN_M4": true, "JUL_M1": true, "JUL_M2": true, "JUL_M3": true, "JUL_M4": true }
+      },
+      {
+        bil: 4,
+        aktiviti: "Draf Kerangka Kompetensi AI Sektor Awam",
+        kos: 0,
+        sasaranMula: "2026-06-15",
+        sasaranTamat: "2026-07-31",
+        laksanaMula: "2026-06-15",
+        laksanaTamat: "2026-07-31",
+        tempohRancang: 46,
+        tempohSelesai: 46,
+        peratusRancang: 0.021325915624,
+        peratusSemasa: 0.021325915624,
+        status: "SELESAI",
+        weeks: { "JUN_M3": true, "JUN_M4": true, "JUL_M1": true, "JUL_M2": true, "JUL_M3": true, "JUL_M4": true }
+      },
+      {
+        bil: 5,
+        aktiviti: "Pengesahan (Validation ) Kerangka dalaman INTAN /JPA",
+        kos: 0,
+        sasaranMula: "2026-08-01",
+        sasaranTamat: "2026-08-30",
+        laksanaMula: "2026-08-01",
+        laksanaTamat: "2026-08-30",
+        tempohRancang: 29,
+        tempohSelesai: 29,
+        peratusRancang: 0.013444598980,
+        peratusSemasa: 0.013444598980,
+        status: "SELESAI",
+        weeks: { "OGOS_M1": true, "OGOS_M2": true, "OGOS_M3": true, "OGOS_M4": true }
+      },
+      {
+        bil: 6,
+        aktiviti: "Libat Urus Pakar Industri bagi Pengesahan Kerangka -sesi 1",
+        kos: 40000,
+        sasaranMula: "2026-09-01",
+        sasaranTamat: "2026-09-15",
+        laksanaMula: "2026-09-01",
+        laksanaTamat: "",
+        tempohRancang: 14,
+        tempohSelesai: 0,
+        peratusRancang: 0.006490496059,
+        peratusSemasa: 0,
+        status: "DALAM PELAKSANAAN",
+        weeks: { "SEPT_M1": true, "SEPT_M2": true }
+      },
+      {
+        bil: 7,
+        aktiviti: "Libat Urus Pakar Industri bagi Pengesahan Kerangka -sesi 2",
+        kos: 40000,
+        sasaranMula: "2026-09-17",
+        sasaranTamat: "2026-09-26",
+        laksanaMula: "",
+        laksanaTamat: "",
+        tempohRancang: 9,
+        tempohSelesai: 0,
+        peratusRancang: 0.004172461752,
+        peratusSemasa: 0,
+        status: "BELUM MULA",
+        weeks: { "SEPT_M3": true, "SEPT_M4": true }
+      },
+      {
+        bil: 8,
+        aktiviti: "Ketersediaan Kerangka (Final )",
+        kos: 0,
+        sasaranMula: "2026-08-01",
+        sasaranTamat: "2026-09-30",
+        laksanaMula: "",
+        laksanaTamat: "",
+        tempohRancang: 60,
+        tempohSelesai: 0,
+        peratusRancang: 0.027816411683,
+        peratusSemasa: 0,
+        status: "BELUM MULA",
+        weeks: { "OGOS_M1": true, "OGOS_M2": true, "OGOS_M3": true, "OGOS_M4": true, "SEPT_M1": true, "SEPT_M2": true, "SEPT_M3": true, "SEPT_M4": true }
+      },
+      {
+        bil: 9,
+        aktiviti: "Menggunapakai Kerangka dalam pembangunan modul latihan",
+        kos: 0,
+        sasaranMula: "2026-09-01",
+        sasaranTamat: "2029-12-30",
+        laksanaMula: "",
+        laksanaTamat: "",
+        tempohRancang: 1216,
+        tempohSelesai: 0,
+        peratusRancang: 0.563745943440,
+        peratusSemasa: 0,
+        status: "BELUM MULA",
+        weeks: { "SEPT_M1": true, "SEPT_M2": true, "SEPT_M3": true, "SEPT_M4": true, "OKT_M1": true, "OKT_M2": true, "OKT_M3": true, "OKT_M4": true, "NOV_M1": true, "NOV_M2": true, "NOV_M3": true, "NOV_M4": true, "DIS_M1": true, "DIS_M2": true, "DIS_M3": true, "DIS_M4": true, "JAN_M1": true, "JAN_M2": true, "JAN_M3": true, "JAN_M4": true }
+      },
+      {
+        bil: 10,
+        aktiviti: "Penghasilan Buku Kerangka Kompetensi AI",
+        kos: 40000,
+        sasaranMula: "2026-10-16",
+        sasaranTamat: "2027-01-25",
+        laksanaMula: "",
+        laksanaTamat: "",
+        tempohRancang: 101,
+        tempohSelesai: 0,
+        peratusRancang: 0.046824292999,
+        peratusSemasa: 0,
+        status: "BELUM MULA",
+        weeks: { "OKT_M3": true, "OKT_M4": true, "NOV_M1": true, "NOV_M2": true, "NOV_M3": true, "NOV_M4": true, "DIS_M1": true, "DIS_M2": true, "DIS_M3": true, "DIS_M4": true, "JAN_M1": true, "JAN_M2": true, "JAN_M3": true, "JAN_M4": true }
+      },
+      {
+        bil: 11,
+        aktiviti: "Pelancaran Buku Kerangka Kompetensi Latihan AI Sektor Awam",
+        kos: 0,
+        sasaranMula: "2027-01-02",
+        sasaranTamat: "2027-01-31",
+        laksanaMula: "",
+        laksanaTamat: "",
+        tempohRancang: 29,
+        tempohSelesai: 0,
+        peratusRancang: 0.013444598980,
+        peratusSemasa: 0,
+        status: "BELUM MULA",
+        weeks: { "JAN_M1": true, "JAN_M2": true, "JAN_M3": true, "JAN_M4": true }
+      },
+      {
+        bil: 12,
+        aktiviti: "Menilai keberkesanan Kerangka dalam penyampaian latihan AI",
+        kos: 0,
+        sasaranMula: "2027-07-01",
+        sasaranTamat: "2027-10-31",
+        laksanaMula: "",
+        laksanaTamat: "",
+        tempohRancang: 122,
+        tempohSelesai: 0,
+        peratusRancang: 0.056560037089,
+        peratusSemasa: 0,
+        status: "BELUM MULA",
+        weeks: {}
+      },
+      {
+        bil: 13,
+        aktiviti: "Penambahbaikan berterusan",
+        kos: 30000,
+        sasaranMula: "2027-11-01",
+        sasaranTamat: "2028-12-30",
+        laksanaMula: "",
+        laksanaTamat: "",
+        tempohRancang: 425,
+        tempohSelesai: 0,
+        peratusRancang: 0.197032916087,
+        peratusSemasa: 0,
+        status: "BELUM MULA",
+        weeks: {}
+      }
+    ];
+
+    function generateStandardTemplate(initiative) {
+      return [
+        {
+          bil: 1,
+          aktiviti: `Penyediaan Dokumen Keperluan & Terma Rujukan (TOR) - ${initiative.code}`,
+          kos: 0,
+          sasaranMula: "2026-10-01",
+          sasaranTamat: "2026-11-15",
+          laksanaMula: "",
+          laksanaTamat: "",
+          tempohRancang: 45,
+          tempohSelesai: 0,
+          peratusRancang: 0.15,
+          peratusSemasa: 0,
+          status: "BELUM MULA",
+          weeks: { "OKT_M1": true, "OKT_M2": true, "OKT_M3": true, "OKT_M4": true, "NOV_M1": true, "NOV_M2": true }
+        },
+        {
+          bil: 2,
+          aktiviti: `Kajian Penyelidikan & Penandaarasan Amalan Terbaik Industri`,
+          kos: 0,
+          sasaranMula: "2026-11-16",
+          sasaranTamat: "2026-12-31",
+          laksanaMula: "",
+          laksanaTamat: "",
+          tempohRancang: 45,
+          tempohSelesai: 0,
+          peratusRancang: 0.15,
+          peratusSemasa: 0,
+          status: "BELUM MULA",
+          weeks: { "NOV_M3": true, "NOV_M4": true, "DIS_M1": true, "DIS_M2": true, "DIS_M3": true, "DIS_M4": true }
+        },
+        {
+          bil: 3,
+          aktiviti: `Bengkel Libat Urus Bersama Agensi Peneraju & Pakar Subjek`,
+          kos: 20000,
+          sasaranMula: "2027-01-02",
+          sasaranTamat: "2027-02-28",
+          laksanaMula: "",
+          laksanaTamat: "",
+          tempohRancang: 58,
+          tempohSelesai: 0,
+          peratusRancang: 0.20,
+          peratusSemasa: 0,
+          status: "BELUM MULA",
+          weeks: { "JAN_M1": true, "JAN_M2": true, "JAN_M3": true, "JAN_M4": true }
+        },
+        {
+          bil: 4,
+          aktiviti: `Pelaksanaan Fasa Rintis / Pembuktian Konsep (PoC)`,
+          kos: 50000,
+          sasaranMula: "2027-03-01",
+          sasaranTamat: "2027-08-31",
+          laksanaMula: "",
+          laksanaTamat: "",
+          tempohRancang: 184,
+          tempohSelesai: 0,
+          peratusRancang: 0.30,
+          peratusSemasa: 0,
+          status: "BELUM MULA",
+          weeks: {}
+        },
+        {
+          bil: 5,
+          aktiviti: `Penilaian Keberkesanan, Penerbitan Garis Panduan & Pelaksanaan Penuh`,
+          kos: 10000,
+          sasaranMula: "2027-09-01",
+          sasaranTamat: "2028-06-30",
+          laksanaMula: "",
+          laksanaTamat: "",
+          tempohRancang: 303,
+          tempohSelesai: 0,
+          peratusRancang: 0.20,
+          peratusSemasa: 0,
+          status: "BELUM MULA",
+          weeks: {}
+        }
+      ];
+    }
+
+    // Master in-memory data store
+    const allInitiativesData = {};
+
+    function initDataStore() {
+      const savedData = localStorage.getItem('coe_ai_portfolio_data');
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          Object.assign(allInitiativesData, parsed);
+          // Restore hasData flags based on presence of customized tasks
+          initiativeMetadata.forEach(meta => {
+            if (allInitiativesData[meta.id] && allInitiativesData[meta.id].length > 0) {
+              if (meta.id === 1 || allInitiativesData[meta.id].some(t => t.status !== 'BELUM MULA' || (t.kos && t.kos > 50000))) {
+                meta.hasData = true;
+              }
+            }
+          });
+          return;
+        } catch (e) {
+          console.error("Gagal membaca cache:", e);
+        }
+      }
+
+      initiativeMetadata.forEach(meta => {
+        if (meta.id === 1) {
+          allInitiativesData[meta.id] = JSON.parse(JSON.stringify(inisiatif1Tasks));
+        } else {
+          allInitiativesData[meta.id] = generateStandardTemplate(meta);
+        }
+      });
+    }
+
+    function persistDataStore() {
+      try {
+        localStorage.setItem('coe_ai_portfolio_data', JSON.stringify(allInitiativesData));
+      } catch (e) {
+        console.warn("Storage quota:", e);
+      }
+    }
+
+    let activeInitiativeId = 1;
+    let editingTaskBil = null;
+    let isAddingNewTask = false;
+
+    // Charts instances
+    let portfolioBarChartInstance = null;
+    let portfolioDonutChartInstance = null;
+    let detailScurveChartInstance = null;
+    let detailCostChartInstance = null;
+
+    const timelineWeekKeys = [
+      "JUN_M1", "JUN_M2", "JUN_M3", "JUN_M4",
+      "JUL_M1", "JUL_M2", "JUL_M3", "JUL_M4",
+      "OGOS_M1", "OGOS_M2", "OGOS_M3", "OGOS_M4",
+      "SEPT_M1", "SEPT_M2", "SEPT_M3", "SEPT_M4",
+      "OKT_M1", "OKT_M2", "OKT_M3", "OKT_M4",
+      "NOV_M1", "NOV_M2", "NOV_M3", "NOV_M4",
+      "DIS_M1", "DIS_M2", "DIS_M3", "DIS_M4",
+      "JAN_M1", "JAN_M2", "JAN_M3", "JAN_M4"
+    ];
+
+    function formatRM(val) {
+      return new Intl.NumberFormat('ms-MY', { style: 'currency', currency: 'MYR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(val || 0);
+    }
+
+    function parseExcelDateValue(val) {
+      if (!val) return "";
+      if (val instanceof Date && !isNaN(val)) {
+        return val.toISOString().substring(0, 10);
+      }
+      if (typeof val === 'number') {
+        const utc_days = Math.floor(val - 25569);
+        const utc_value = utc_days * 86400;
+        const date_info = new Date(utc_value * 1000);
+        return date_info.toISOString().substring(0, 10);
+      }
+      const str = String(val).trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+      const parts = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+      if (parts) {
+        const day = parts[1].padStart(2, '0');
+        const month = parts[2].padStart(2, '0');
+        const year = parts[3];
+        return `${year}-${month}-${day}`;
+      }
+      return str.substring(0, 10);
+    }
+
+    // COMPREHENSIVE REACTION ENGINE FOR MASTER PORTFOLIO
+    function updateMasterPortfolioView() {
+      // 1. Calculate Portfolio Aggregates
+      let grandTotalCost = 0;
+      let grandTotalTasks = 0;
+      let grandCompletedTasks = 0;
+      let grandCostedTasks = 0;
+      let readyInitiativeCount = 0;
+      let activeOrCompletedInitiatives = 0;
+
+      const barDataSelesai = [];
+      const barDataLaksana = [];
+      const barDataBelum = [];
+
+      initiativeMetadata.forEach(meta => {
+        const tasks = allInitiativesData[meta.id] || [];
+        const taskCount = tasks.length;
+        grandTotalTasks += taskCount;
+
+        let completed = 0;
+        let inProgress = 0;
+        let notStarted = 0;
+        let initCost = 0;
+
+        tasks.forEach(t => {
+          const cost = Number(t.kos) || 0;
+          initCost += cost;
+          if (cost > 0) grandCostedTasks++;
+
+          if (t.status === 'SELESAI') completed++;
+          else if (t.status === 'DALAM PELAKSANAAN') inProgress++;
+          else notStarted++;
+        });
+
+        grandTotalCost += initCost;
+        grandCompletedTasks += completed;
+
+        if (meta.hasData || (completed > 0 || inProgress > 0) || taskCount > 5) {
+          readyInitiativeCount++;
+        }
+        if (completed > 0 || inProgress > 0) {
+          activeOrCompletedInitiatives++;
+        }
+
+        barDataSelesai.push(completed);
+        barDataLaksana.push(inProgress);
+        barDataBelum.push(notStarted);
+      });
+
+      const overallProgressPct = grandTotalTasks > 0 ? ((grandCompletedTasks / grandTotalTasks) * 100).toFixed(1) : "0.0";
+
+      // 2. Update KPI Cards in Master View
+      const activeBadge = document.getElementById('master-kpi-active-badge');
+      const subInitiatives = document.getElementById('master-kpi-sub-initiatives');
+      const pctVal = document.getElementById('master-kpi-ini1-pct');
+      const taskCounts = document.getElementById('master-kpi-task-counts');
+      const progBar = document.getElementById('master-kpi-progress-bar');
+      const subProgress = document.getElementById('master-kpi-sub-progress');
+      const costVal = document.getElementById('master-kpi-total-cost');
+      const costBadge = document.getElementById('master-kpi-costed-tasks-badge');
+      const overallStatus = document.getElementById('master-kpi-overall-status');
+      const activeCountBadge = document.getElementById('master-kpi-active-count-badge');
+      const headerDataReady = document.getElementById('headerDataReadyCount');
+
+      if (activeBadge) activeBadge.innerText = `${readyInitiativeCount} Data Penuh`;
+      if (subInitiatives) subInitiatives.innerText = `${readyInitiativeCount} Terisi Lengkap • ${17 - readyInitiativeCount} Draf Rangka`;
+      if (headerDataReady) headerDataReady.innerText = `${readyInitiativeCount} / 17 Inisiatif`;
+
+      if (pctVal) pctVal.innerText = `${overallProgressPct}%`;
+      if (taskCounts) taskCounts.innerText = `${grandCompletedTasks} / ${grandTotalTasks} Aktiviti`;
+      if (progBar) progBar.style.width = `${Math.min(overallProgressPct, 100)}%`;
+
+      const ini1Tasks = allInitiativesData[1] || [];
+      const ini1Done = ini1Tasks.filter(t => t.status === 'SELESAI').length;
+      const ini1Pct = ini1Tasks.length > 0 ? ((ini1Done / ini1Tasks.length) * 100).toFixed(1) : "0.0";
+      if (subProgress) subProgress.innerText = `Inisiatif 1: ${ini1Pct}% siap (${ini1Done}/${ini1Tasks.length} aktiviti)`;
+
+      if (costVal) costVal.innerText = formatRM(grandTotalCost);
+      if (costBadge) costBadge.innerText = `${grandCostedTasks} Aktiviti Berkos`;
+
+      if (overallStatus) {
+        overallStatus.innerText = activeOrCompletedInitiatives > 0 ? "MEMUASKAN" : "PERANCANGAN";
+      }
+      if (activeCountBadge) {
+        activeCountBadge.innerText = `${activeOrCompletedInitiatives} Inisiatif Aktif`;
+      }
+
+      // 3. Update Bar Chart
+      if (portfolioBarChartInstance) {
+        portfolioBarChartInstance.data.datasets[0].data = barDataSelesai;
+        portfolioBarChartInstance.data.datasets[1].data = barDataLaksana;
+        portfolioBarChartInstance.data.datasets[2].data = barDataBelum;
+        portfolioBarChartInstance.update();
+      }
+
+      // 4. Update Donut Chart
+      if (portfolioDonutChartInstance) {
+        const draftCount = 17 - readyInitiativeCount;
+        portfolioDonutChartInstance.data.datasets[0].data = [readyInitiativeCount, Math.max(0, draftCount)];
+        portfolioDonutChartInstance.data.labels = [
+          `Data Lengkap (${readyInitiativeCount})`,
+          `Templat / Draf (${draftCount})`
+        ];
+        portfolioDonutChartInstance.update();
+      }
+
+      // 5. Render Index Table
+      renderMasterPortfolioTable();
+    }
+
+    // MASTER PORTFOLIO TABLE RENDERER
+    function renderMasterPortfolioTable(dataset = initiativeMetadata) {
+      const tbody = document.getElementById('masterPortfolioTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      dataset.forEach(meta => {
+        const tasks = allInitiativesData[meta.id] || [];
+        const count = tasks.length;
+        const completed = tasks.filter(t => t.status === 'SELESAI').length;
+        const inProgress = tasks.filter(t => t.status === 'DALAM PELAKSANAAN').length;
+        const progressPct = count > 0 ? ((completed / count) * 100).toFixed(1) : "0.0";
+        const totalCost = tasks.reduce((sum, t) => sum + (Number(t.kos) || 0), 0);
+
+        const isFullData = meta.id === 1 || meta.hasData || count > 5 || completed > 0;
+        let dataStatusBadge = isFullData 
+          ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Data Lengkap</span>`
+          : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">Draf Rangka</span>`;
+
+        let execStatusBadge = '';
+        if (count > 0 && completed === count) {
+          execStatusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">SELESAI</span>`;
+        } else if (completed > 0 || inProgress > 0) {
+          execStatusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1 animate-ping"></span>AKTIF</span>`;
+        } else {
+          execStatusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600">PERANCANGAN</span>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="py-3 px-3 text-center font-bold text-slate-500">${meta.id}</td>
+          <td class="py-3 px-3">
+            <div class="font-bold text-slate-900">${meta.code}: ${meta.title}</div>
+            <div class="text-[11px] text-slate-500 truncate max-w-md">${meta.desc}</div>
+          </td>
+          <td class="py-3 px-3 text-center">${dataStatusBadge}</td>
+          <td class="py-3 px-3 text-center font-semibold text-slate-700">${count}</td>
+          <td class="py-3 px-3 text-right font-bold ${totalCost > 0 ? 'text-indigo-600' : 'text-slate-400'}">${totalCost > 0 ? formatRM(totalCost) : 'RM 0'}</td>
+          <td class="py-3 px-3 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <span class="font-bold text-slate-700">${progressPct}%</span>
+              <div class="w-16 bg-slate-100 rounded-full h-1.5">
+                <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${progressPct}%"></div>
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-3 text-center">${execStatusBadge}</td>
+          <td class="py-3 px-3 text-center no-print">
+            <button onclick="openInitiativeById(${meta.id})" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition cursor-pointer">
+              Buka
+              <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterMasterPortfolioTable() {
+      const q = (document.getElementById('portfolioSearchInput')?.value || '').toLowerCase();
+      const filtered = initiativeMetadata.filter(m => 
+        m.title.toLowerCase().includes(q) || 
+        m.code.toLowerCase().includes(q) || 
+        m.desc.toLowerCase().includes(q)
+      );
+      renderMasterPortfolioTable(filtered);
+    }
+
+    function openInitiativeById(id) {
+      activeInitiativeId = id;
+      const select = document.getElementById('initiativeSelect');
+      if (select) select.value = id;
+      renderActiveInitiativeDetail();
+      switchView('initiative-detail');
+    }
+
+    function populateInitiativeDropdown() {
+      const select = document.getElementById('initiativeSelect');
+      if (!select) return;
+      select.innerHTML = '';
+      initiativeMetadata.forEach(meta => {
+        const opt = document.createElement('option');
+        opt.value = meta.id;
+        const taskCount = (allInitiativesData[meta.id] || []).length;
+        opt.textContent = `${meta.code}: ${meta.title} (${taskCount} Aktiviti)`;
+        select.appendChild(opt);
+      });
+      select.value = activeInitiativeId;
+    }
+
+    function populateImportTargetDropdown() {
+      const select = document.getElementById('importTargetInitiative');
+      if (!select) return;
+      select.innerHTML = '<option value="auto">Auto-Kesan Mengikut Helaian / Lajur</option>';
+      initiativeMetadata.forEach(meta => {
+        const opt = document.createElement('option');
+        opt.value = meta.id;
+        opt.textContent = `${meta.code}: ${meta.title}`;
+        select.appendChild(opt);
+      });
+    }
+
+    function switchView(viewName) {
+      const views = ['master-portfolio', 'initiative-detail', 'gantt-matrix'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        const tabBtn = document.getElementById(`tab-${v}`);
+        if (!el || !tabBtn) return;
+        if (v === viewName) {
+          el.classList.remove('hidden');
+          tabBtn.className = "py-3 px-1 border-b-2 border-indigo-600 text-indigo-600 font-bold flex items-center gap-2 cursor-pointer";
+        } else {
+          el.classList.add('hidden');
+          tabBtn.className = "py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 flex items-center gap-2 cursor-pointer";
+        }
+      });
+
+      if (viewName === 'master-portfolio') {
+        updateMasterPortfolioView();
+        if (portfolioBarChartInstance) portfolioBarChartInstance.resize();
+        if (portfolioDonutChartInstance) portfolioDonutChartInstance.resize();
+      } else if (viewName === 'initiative-detail') {
+        renderActiveInitiativeDetail();
+        if (detailScurveChartInstance) detailScurveChartInstance.resize();
+        if (detailCostChartInstance) detailCostChartInstance.resize();
+      } else if (viewName === 'gantt-matrix') {
+        renderTimelineMatrix();
+      }
+    }
+
+    function onInitiativeChange(id) {
+      activeInitiativeId = parseInt(id) || 1;
+      renderActiveInitiativeDetail();
+    }
+
+    // INITIATIVE DETAIL RENDERER
+    function renderActiveInitiativeDetail() {
+      const meta = initiativeMetadata.find(m => m.id === activeInitiativeId) || initiativeMetadata[0];
+      const tasks = allInitiativesData[activeInitiativeId] || [];
+
+      const tag = document.getElementById('detailInitiativeTag');
+      const title = document.getElementById('detailInitiativeTitle');
+      const desc = document.getElementById('detailInitiativeDesc');
+      const tableTitle = document.getElementById('tableHeaderTitle');
+
+      if (tag) tag.innerText = meta.code;
+      if (title) title.innerText = `${meta.code}: ${meta.title}`;
+      if (desc) desc.innerText = meta.desc;
+      if (tableTitle) tableTitle.innerText = `Senarai Aktiviti: ${meta.code}`;
+
+      const totalTasks = tasks.length;
+      const completedTasks = tasks.filter(t => t.status === 'SELESAI').length;
+      const inProgressTasks = tasks.filter(t => t.status === 'DALAM PELAKSANAAN').length;
+      const actPercent = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(2) : "0.00";
+
+      const statusBadge = document.getElementById('initiativeBadgeStatus');
+      const detailBadge = document.getElementById('detail-kpi-status-badge');
+      let statusText = "BELUM MULA";
+      let statusClass = "bg-slate-100 text-slate-700 border-slate-200";
+
+      if (completedTasks === totalTasks && totalTasks > 0) {
+        statusText = "SELESAI SEPENUHNYA";
+        statusClass = "bg-emerald-100 text-emerald-800 border-emerald-200";
+      } else if (completedTasks > 0 || inProgressTasks > 0) {
+        statusText = "ON TRACK (AKTIF)";
+        statusClass = "bg-emerald-100 text-emerald-800 border-emerald-200";
+      }
+
+      if (statusBadge) {
+        statusBadge.className = `inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${statusClass}`;
+        statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${inProgressTasks > 0 ? 'bg-emerald-500 animate-pulse mr-1.5' : 'bg-slate-400 mr-1.5'}"></span> ${statusText}`;
+      }
+      if (detailBadge) {
+        detailBadge.className = `inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${statusClass}`;
+        detailBadge.innerHTML = `<span class="w-2 h-2 rounded-full ${inProgressTasks > 0 ? 'bg-emerald-500 animate-pulse mr-1.5' : 'bg-slate-400 mr-1.5'}"></span> ${statusText}`;
+      }
+
+      const totalCost = tasks.reduce((sum, t) => sum + (Number(t.kos) || 0), 0);
+      const costedTasksCount = tasks.filter(t => (Number(t.kos) || 0) > 0).length;
+
+      const totalDays = tasks.reduce((sum, t) => sum + (Number(t.tempohRancang) || 0), 0);
+      const completedDays = tasks.reduce((sum, t) => {
+        if (t.status === 'SELESAI') return sum + (Number(t.tempohRancang) || 0);
+        if (t.status === 'DALAM PELAKSANAAN') return sum + ((Number(t.tempohRancang) || 0) * 0.5);
+        return sum;
+      }, 0);
+      const weightPercent = totalDays > 0 ? ((completedDays / totalDays) * 100).toFixed(2) : "0.00";
+
+      const kpiCount = document.getElementById('detail-kpi-count');
+      const kpiCountPct = document.getElementById('detail-kpi-count-percent');
+      const kpiCountBar = document.getElementById('detail-kpi-count-bar');
+      const kpiWeight = document.getElementById('detail-kpi-weight');
+      const kpiDays = document.getElementById('detail-kpi-days');
+      const kpiWeightBar = document.getElementById('detail-kpi-weight-bar');
+      const kpiCost = document.getElementById('detail-kpi-cost');
+      const kpiCostBadge = document.getElementById('detail-kpi-cost-badge');
+      const kpiCurrentTask = document.getElementById('detail-kpi-current-task');
+
+      if (kpiCount) kpiCount.innerText = `${completedTasks} / ${totalTasks}`;
+      if (kpiCountPct) kpiCountPct.innerText = `${actPercent}%`;
+      if (kpiCountBar) kpiCountBar.style.width = `${actPercent}%`;
+
+      if (kpiWeight) kpiWeight.innerText = `${weightPercent}%`;
+      if (kpiDays) kpiDays.innerText = `${Math.round(completedDays)} / ${totalDays} Hari`;
+      if (kpiWeightBar) kpiWeightBar.style.width = `${Math.min(weightPercent, 100)}%`;
+
+      if (kpiCost) kpiCost.innerText = formatRM(totalCost);
+      if (kpiCostBadge) kpiCostBadge.innerText = `${costedTasksCount} Aktiviti Berkos`;
+
+      const activeTask = tasks.find(t => t.status === 'DALAM PELAKSANAAN') || tasks.find(t => t.status === 'BELUM MULA');
+      if (kpiCurrentTask) {
+        kpiCurrentTask.innerText = activeTask ? `Aktiviti ${activeTask.bil}: ${activeTask.aktiviti.substring(0, 32)}...` : "Semua fasa aktiviti selesai";
+      }
+
+      renderDetailTasksTable(tasks);
+      renderTimelineMatrix();
+      updateDetailCharts();
+    }
+
+    // TASK TABLE RENDERER
+    function renderDetailTasksTable(tasksToRender) {
+      const tbody = document.getElementById('detailTasksTableBody');
+      const tfoot = document.getElementById('detailTasksTableFoot');
+      if (!tbody || !tfoot) return;
+      tbody.innerHTML = '';
+
+      if (tasksToRender.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-slate-400">Tiada aktiviti didaftarkan bagi inisiatif ini. Tekan butang 'Tambah Aktiviti' untuk mula.</td></tr>`;
+        tfoot.innerHTML = '';
+        return;
+      }
+
+      tasksToRender.forEach(task => {
+        let badge = '';
+        if (task.status === 'SELESAI') {
+          badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">SELESAI</span>`;
+        } else if (task.status === 'DALAM PELAKSANAAN') {
+          badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1 animate-ping"></span>LAKSANA</span>`;
+        } else {
+          badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">BELUM MULA</span>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 text-center font-bold text-slate-500">${task.bil}</td>
+          <td class="py-2.5 px-3">
+            <div class="font-bold text-slate-800">${task.aktiviti}</div>
+            <div class="text-[10px] text-slate-400">Tempoh Rancang: ${task.tempohRancang} hari</div>
+          </td>
+          <td class="py-2.5 px-3 text-right font-semibold ${task.kos > 0 ? 'text-indigo-700' : 'text-slate-400'}">
+            ${task.kos > 0 ? formatRM(task.kos) : 'RM 0'}
+          </td>
+          <td class="py-2.5 px-3 text-center text-slate-600">
+            <div>${task.sasaranMula || '-'}</div>
+            <div class="text-[10px] text-slate-400 font-mono">${task.sasaranTamat ? 'hingga ' + task.sasaranTamat : ''}</div>
+          </td>
+          <td class="py-2.5 px-3 text-center text-slate-600">
+            <div>${task.laksanaMula || '-'}</div>
+            <div class="text-[10px] text-slate-400 font-mono">${task.laksanaTamat ? 'hingga ' + task.laksanaTamat : ''}</div>
+          </td>
+          <td class="py-2.5 px-3 text-center font-medium text-slate-700">
+            ${task.tempohRancang} Hari
+          </td>
+          <td class="py-2.5 px-3 text-center font-bold text-slate-800">
+            ${((task.peratusRancang || 0) * 100).toFixed(2)}%
+          </td>
+          <td class="py-2.5 px-3 text-center">
+            ${badge}
+          </td>
+          <td class="py-2.5 px-3 text-center no-print">
+            <div class="flex items-center justify-center space-x-1">
+              <button onclick="openEditTaskModal(${task.bil})" class="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition cursor-pointer" title="Kemaskini Aktiviti">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+              </button>
+              <button onclick="deleteTask(${task.bil})" class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer" title="Padam Aktiviti">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const totalCost = tasksToRender.reduce((sum, t) => sum + (Number(t.kos) || 0), 0);
+      const totalDays = tasksToRender.reduce((sum, t) => sum + (Number(t.tempohRancang) || 0), 0);
+      const completedCount = tasksToRender.filter(t => t.status === 'SELESAI').length;
+
+      tfoot.innerHTML = `
+        <tr>
+          <td colspan="2" class="py-3 px-3 text-right">JUMLAH KESELURUHAN (${tasksToRender.length} Aktiviti):</td>
+          <td class="py-3 px-3 text-right text-indigo-700">${formatRM(totalCost)}</td>
+          <td colspan="2" class="text-center text-slate-400">-</td>
+          <td class="py-3 px-3 text-center">${totalDays} Hari</td>
+          <td class="py-3 px-3 text-center text-indigo-700">100%</td>
+          <td class="py-3 px-3 text-center text-emerald-700">${completedCount} Selesai</td>
+          <td class="no-print"></td>
+        </tr>
+      `;
+    }
+
+    function filterCurrentInitiativeTasks() {
+      const q = (document.getElementById('taskSearchInput')?.value || '').toLowerCase();
+      const status = document.getElementById('taskStatusFilter')?.value || 'ALL';
+      const tasks = allInitiativesData[activeInitiativeId] || [];
+
+      const filtered = tasks.filter(t => {
+        const matchQ = t.aktiviti.toLowerCase().includes(q);
+        const matchStatus = status === 'ALL' || t.status === status;
+        return matchQ && matchStatus;
+      });
+
+      renderDetailTasksTable(filtered);
+    }
+
+    // TIMELINE MATRIX RENDERER
+    function renderTimelineMatrix() {
+      const tbody = document.getElementById('masterTimelineMatrixBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      const tasks = allInitiativesData[activeInitiativeId] || [];
+
+      if (tasks.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="35" class="py-4 text-center text-slate-400">Tiada aktiviti untuk dipaparkan dalam garis masa.</td></tr>`;
+        return;
+      }
+
+      tasks.forEach(act => {
+        let cellsHtml = '';
+        timelineWeekKeys.forEach(wk => {
+          const isMarked = act.weeks && act.weeks[wk];
+          let cellContent = '';
+
+          if (isMarked) {
+            if (act.status === 'SELESAI') {
+              cellContent = '<div class="w-full h-3.5 bg-emerald-500 rounded-xs shadow-xs" title="Selesai: ' + act.aktiviti + '"></div>';
+            } else if (act.status === 'DALAM PELAKSANAAN') {
+              cellContent = '<div class="w-full h-3.5 bg-amber-500 rounded-xs animate-pulse" title="Sedang Laksana: ' + act.aktiviti + '"></div>';
+            } else {
+              cellContent = '<div class="w-full h-3.5 bg-indigo-200 rounded-xs" title="Dirancang: ' + act.aktiviti + '"></div>';
+            }
+          }
+
+          cellsHtml += `<td class="p-0.5 text-center border-r border-slate-100 ${wk.includes('M4') ? 'border-r-slate-300' : ''}">${cellContent}</td>`;
+        });
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100 text-[11px]";
+        tr.innerHTML = `
+          <td class="py-2 px-2 text-center font-bold text-slate-500">${act.bil}</td>
+          <td class="py-2 px-3 text-slate-800 font-medium truncate max-w-[240px]" title="${act.aktiviti}">
+            ${act.bil}. ${act.aktiviti}
+          </td>
+          ${cellsHtml}
+          <td class="py-2 px-2 text-center font-mono font-semibold text-slate-600 bg-slate-50">${act.tempohRancang}h</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // CHART INITIALIZATION
+    function initPortfolioCharts() {
+      const ctxBar = document.getElementById('portfolioStatusBarChart');
+      if (ctxBar) {
+        portfolioBarChartInstance = new Chart(ctxBar.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: ['Inis. 1', 'Inis. 2', 'Inis. 3', 'Inis. 4', 'Inis. 5', 'Inis. 6', 'Inis. 7', 'Inis. 8', 'Inis. 9', 'Inis. 10', 'Inis. 11', 'Inis. 12', 'Inis. 13', 'Inis. 14', 'Inis. 15', 'Inis. 16', 'Inis. 17'],
+            datasets: [
+              { label: 'Selesai', data: [], backgroundColor: '#10b981' },
+              { label: 'Dalam Pelaksanaan', data: [], backgroundColor: '#f59e0b' },
+              { label: 'Belum Mula / Perancangan', data: [], backgroundColor: '#cbd5e1' }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } },
+              y: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { stepSize: 2 } }
+            },
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }
+            }
+          }
+        });
+      }
+
+      const ctxDonut = document.getElementById('portfolioDataDonutChart');
+      if (ctxDonut) {
+        portfolioDonutChartInstance = new Chart(ctxDonut.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: ['Data Lengkap', 'Templat / Draf'],
+            datasets: [{
+              data: [1, 16],
+              backgroundColor: ['#4f46e5', '#e2e8f0'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+            },
+            cutout: '70%'
+          }
+        });
+      }
+    }
+
+    function initDetailCharts() {
+      const ctxScurve = document.getElementById('detailScurveChart');
+      if (ctxScurve) {
+        detailScurveChartInstance = new Chart(ctxScurve.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['Fasa 1', 'Fasa 2', 'Fasa 3', 'Fasa 4', 'Fasa 5', 'Fasa 6', 'Fasa 7', 'Fasa 8'],
+            datasets: [
+              {
+                label: 'Dirancang (%)',
+                data: [10, 25, 45, 60, 75, 85, 95, 100],
+                borderColor: '#94a3b8',
+                borderDash: [4, 4],
+                borderWidth: 2,
+                fill: false,
+                tension: 0.3
+              },
+              {
+                label: 'Sebenar (%)',
+                data: [10, 25, 38.46, null, null, null, null, null],
+                borderColor: '#4f46e5',
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 5,
+                pointBackgroundColor: '#4f46e5'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%', font: { size: 10 } } },
+              x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            },
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+      }
+
+      const ctxCost = document.getElementById('detailCostChart');
+      if (ctxCost) {
+        detailCostChartInstance = new Chart(ctxCost.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: [],
+            datasets: [{
+              data: [],
+              backgroundColor: ['#4f46e5', '#06b6d4', '#8b5cf6', '#f59e0b', '#ec4899', '#10b981'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            cutout: '68%'
+          }
+        });
+      }
+    }
+
+    function updateDetailCharts() {
+      if (!detailCostChartInstance || !detailScurveChartInstance) return;
+
+      const tasks = allInitiativesData[activeInitiativeId] || [];
+      const costedTasks = tasks.filter(t => (Number(t.kos) || 0) > 0);
+
+      const costListContainer = document.getElementById('detailCostList');
+      if (costListContainer) {
+        costListContainer.innerHTML = '';
+
+        if (costedTasks.length === 0) {
+          costListContainer.innerHTML = `<div class="text-slate-400 text-center py-2">Tiada aktiviti berkos ditetapkan (RM 0).</div>`;
+          detailCostChartInstance.data.labels = ['Tiada Kos'];
+          detailCostChartInstance.data.datasets[0].data = [1];
+          detailCostChartInstance.data.datasets[0].backgroundColor = ['#e2e8f0'];
+          detailCostChartInstance.update();
+        } else {
+          const labels = costedTasks.map(t => t.aktiviti.length > 22 ? t.aktiviti.substring(0, 22) + '...' : t.aktiviti);
+          const dataVals = costedTasks.map(t => Number(t.kos));
+          const colors = ['#4f46e5', '#06b6d4', '#8b5cf6', '#f59e0b', '#ec4899', '#10b981'];
+
+          detailCostChartInstance.data.labels = labels;
+          detailCostChartInstance.data.datasets[0].data = dataVals;
+          detailCostChartInstance.data.datasets[0].backgroundColor = colors.slice(0, dataVals.length);
+          detailCostChartInstance.update();
+
+          costedTasks.forEach(t => {
+            const div = document.createElement('div');
+            div.className = "flex items-center justify-between p-1.5 rounded-lg bg-slate-50 text-[11px]";
+            div.innerHTML = `
+              <span class="text-slate-700 truncate max-w-[170px]" title="${t.aktiviti}">${t.aktiviti}</span>
+              <span class="font-bold text-slate-900">${formatRM(t.kos)}</span>
+            `;
+            costListContainer.appendChild(div);
+          });
+        }
+      }
+
+      // Dynamic S-Curve Generation
+      const totalCount = tasks.length || 1;
+      const completedCount = tasks.filter(t => t.status === 'SELESAI').length;
+      const actualPct = ((completedCount / totalCount) * 100).toFixed(1);
+
+      if (activeInitiativeId === 1) {
+        detailScurveChartInstance.data.labels = ['Jun 26', 'Jul 26', 'Ogos 26', 'Sept 26', 'Okt 26', 'Jan 27', 'Dis 27', 'Dis 28', 'Dis 29'];
+        detailScurveChartInstance.data.datasets[0].data = [0.65, 7.05, 11.17, 12.24, 15.0, 23.0, 35.0, 65.0, 100.0];
+        detailScurveChartInstance.data.datasets[1].data = [0.65, 7.05, 8.39, 8.39, null, null, null, null, null];
+      } else {
+        detailScurveChartInstance.data.labels = ['Q1 2026', 'Q2 2026', 'Q3 2026', 'Q4 2026', 'Q1 2027', 'Q2 2027', 'Q3 2027', 'Q4 2027'];
+        detailScurveChartInstance.data.datasets[0].data = [12.5, 25.0, 37.5, 50.0, 62.5, 75.0, 87.5, 100.0];
+        detailScurveChartInstance.data.datasets[1].data = [0, actualPct, null, null, null, null, null, null];
+      }
+      detailScurveChartInstance.update();
+    }
+
+    // MODAL HANDLERS
+    function openEditTaskModal(bil) {
+      isAddingNewTask = false;
+      editingTaskBil = bil;
+      const tasks = allInitiativesData[activeInitiativeId] || [];
+      const task = tasks.find(t => t.bil === bil);
+      if (!task) return;
+
+      document.getElementById('activityModalTitle').innerText = `Kemaskini Aktiviti #${task.bil}`;
+      document.getElementById('modalInputName').value = task.aktiviti;
+      document.getElementById('modalInputCost').value = task.kos || 0;
+      document.getElementById('modalInputStatus').value = task.status;
+      document.getElementById('modalInputTargetStart').value = task.sasaranMula || "";
+      document.getElementById('modalInputTargetEnd').value = task.sasaranTamat || "";
+      document.getElementById('modalInputActualStart').value = task.laksanaMula || "";
+      document.getElementById('modalInputActualEnd').value = task.laksanaTamat || "";
+      document.getElementById('modalInputDays').value = task.tempohRancang || 30;
+
+      document.getElementById('activityModal').classList.remove('hidden');
+    }
+
+    function openAddActivityModal() {
+      isAddingNewTask = true;
+      const tasks = allInitiativesData[activeInitiativeId] || [];
+      const nextBil = tasks.length + 1;
+
+      document.getElementById('activityModalTitle').innerText = `Tambah Aktiviti Baru #${nextBil}`;
+      document.getElementById('modalInputName').value = "";
+      document.getElementById('modalInputCost').value = 0;
+      document.getElementById('modalInputStatus').value = "BELUM MULA";
+      document.getElementById('modalInputTargetStart').value = "2026-10-01";
+      document.getElementById('modalInputTargetEnd').value = "2026-10-31";
+      document.getElementById('modalInputActualStart').value = "";
+      document.getElementById('modalInputActualEnd').value = "";
+      document.getElementById('modalInputDays').value = 30;
+
+      document.getElementById('activityModal').classList.remove('hidden');
+    }
+
+    function closeActivityModal() {
+      document.getElementById('activityModal').classList.add('hidden');
+    }
+
+    function saveActivityModalData() {
+      const tasks = allInitiativesData[activeInitiativeId] || [];
+      const name = document.getElementById('modalInputName').value.trim();
+      const cost = parseFloat(document.getElementById('modalInputCost').value) || 0;
+      const status = document.getElementById('modalInputStatus').value;
+      const targetStart = document.getElementById('modalInputTargetStart').value;
+      const targetEnd = document.getElementById('modalInputTargetEnd').value;
+      const actualStart = document.getElementById('modalInputActualStart').value;
+      const actualEnd = document.getElementById('modalInputActualEnd').value;
+      const days = parseInt(document.getElementById('modalInputDays').value) || 10;
+
+      if (!name) {
+        showToast("Sila masukkan nama aktiviti.");
+        return;
+      }
+
+      if (isAddingNewTask) {
+        const newBil = tasks.length + 1;
+        const newTask = {
+          bil: newBil,
+          aktiviti: name,
+          kos: cost,
+          sasaranMula: targetStart,
+          sasaranTamat: targetEnd,
+          laksanaMula: actualStart,
+          laksanaTamat: actualEnd,
+          tempohRancang: days,
+          tempohSelesai: status === 'SELESAI' ? days : 0,
+          peratusRancang: 0.1,
+          peratusSemasa: status === 'SELESAI' ? 0.1 : 0,
+          status: status,
+          weeks: {}
+        };
+        tasks.push(newTask);
+        showToast(`Aktiviti #${newBil} berjaya ditambah!`);
+      } else {
+        const task = tasks.find(t => t.bil === editingTaskBil);
+        if (task) {
+          task.aktiviti = name;
+          task.kos = cost;
+          task.status = status;
+          task.sasaranMula = targetStart;
+          task.sasaranTamat = targetEnd;
+          task.laksanaMula = actualStart;
+          task.laksanaTamat = actualEnd;
+          task.tempohRancang = days;
+          task.tempohSelesai = status === 'SELESAI' ? days : 0;
+          showToast(`Aktiviti #${task.bil} berjaya dikemaskini!`);
+        }
+      }
+
+      const totalDays = tasks.reduce((acc, t) => acc + (t.tempohRancang || 0), 0);
+      if (totalDays > 0) {
+        tasks.forEach(t => {
+          t.peratusRancang = t.tempohRancang / totalDays;
+          t.peratusSemasa = t.status === 'SELESAI' ? t.peratusRancang : (t.status === 'DALAM PELAKSANAAN' ? t.peratusRancang * 0.5 : 0);
+        });
+      }
+
+      const currentMeta = initiativeMetadata.find(m => m.id === activeInitiativeId);
+      if (currentMeta) currentMeta.hasData = true;
+
+      closeActivityModal();
+      persistDataStore();
+      populateInitiativeDropdown();
+      renderActiveInitiativeDetail();
+      updateMasterPortfolioView();
+    }
+
+    function deleteTask(bil) {
+      let tasks = allInitiativesData[activeInitiativeId] || [];
+      tasks = tasks.filter(t => t.bil !== bil);
+      tasks.forEach((t, i) => t.bil = i + 1);
+      allInitiativesData[activeInitiativeId] = tasks;
+
+      persistDataStore();
+      showToast(`Aktiviti telah dipadam.`);
+      renderActiveInitiativeDetail();
+      updateMasterPortfolioView();
+    }
+
+    // IMPORT MODAL LOGIC
+    function openImportModal() {
+      document.getElementById('importModal').classList.remove('hidden');
+      document.getElementById('importTargetInitiative').value = activeInitiativeId;
+    }
+
+    function closeImportModal() {
+      document.getElementById('importModal').classList.add('hidden');
+    }
+
+    function setImportMode(mode) {
+      const btnFile = document.getElementById('importTabBtnFile');
+      const btnPaste = document.getElementById('importTabBtnPaste');
+      const secFile = document.getElementById('importSectionFile');
+      const secPaste = document.getElementById('importSectionPaste');
+
+      if (mode === 'file') {
+        btnFile.className = "pb-2 px-3 border-b-2 border-indigo-600 text-indigo-600 font-bold cursor-pointer";
+        btnPaste.className = "pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 cursor-pointer";
+        secFile.classList.remove('hidden');
+        secPaste.classList.add('hidden');
+      } else {
+        btnPaste.className = "pb-2 px-3 border-b-2 border-indigo-600 text-indigo-600 font-bold cursor-pointer";
+        btnFile.className = "pb-2 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700 cursor-pointer";
+        secPaste.classList.remove('hidden');
+        secFile.classList.add('hidden');
+      }
+    }
+
+    // Enhanced Excel File Importer for PMO - MILESTONE INISIATIF COE AI.xlsx
+    function handleExcelFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const fileNameElem = document.getElementById('selectedFileName');
+      if (fileNameElem) {
+        fileNameElem.innerText = `Memproses fail: ${file.name}...`;
+        fileNameElem.classList.remove('hidden');
+      }
+
+      showToast(`Membaca fail: ${file.name}...`);
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+          
+          let targetInit = document.getElementById('importTargetInitiative')?.value || 'auto';
+          let importedTotal = 0;
+          let affectedInitiatives = new Set();
+
+          workbook.SheetNames.forEach(sheetName => {
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+            if (!jsonData || jsonData.length === 0) return;
+
+            const masterGroups = detectMasterInitiativeGroups(jsonData);
+            if (masterGroups.length > 1) {
+              masterGroups.forEach(group => {
+                const parsedActivities = parseRowsToActivities(group.rows);
+                if (parsedActivities.length > 0) {
+                  allInitiativesData[group.id] = parsedActivities;
+                  affectedInitiatives.add(group.id);
+                  const meta = initiativeMetadata.find(m => m.id === group.id);
+                  if (meta) meta.hasData = true;
+                  importedTotal += parsedActivities.length;
+                }
+              });
+              return;
+            }
+
+            let matchedId = null;
+            if (targetInit !== 'auto') {
+              matchedId = parseInt(targetInit);
+            } else {
+              const match = sheetName.match(/(\d+)/);
+              if (match) {
+                const num = parseInt(match[1]);
+                if (num >= 1 && num <= 17) matchedId = num;
+              }
+              if (!matchedId) matchedId = activeInitiativeId;
+            }
+
+            const parsedActivities = parseRowsToActivities(jsonData);
+            if (parsedActivities.length > 0) {
+              allInitiativesData[matchedId] = parsedActivities;
+              affectedInitiatives.add(matchedId);
+              const meta = initiativeMetadata.find(m => m.id === matchedId);
+              if (meta) meta.hasData = true;
+              importedTotal += parsedActivities.length;
+            }
+          });
+
+          // Sync storage, UI and master views
+          persistDataStore();
+          closeImportModal();
+          populateInitiativeDropdown();
+          
+          if (affectedInitiatives.has(activeInitiativeId)) {
+            renderActiveInitiativeDetail();
+          } else if (affectedInitiatives.size > 0) {
+            activeInitiativeId = Array.from(affectedInitiatives)[0];
+            const sel = document.getElementById('initiativeSelect');
+            if (sel) sel.value = activeInitiativeId;
+            renderActiveInitiativeDetail();
+          }
+
+          updateMasterPortfolioView();
+          showToast(`Berjaya! ${importedTotal} milestone dikemaskini merentasi ${affectedInitiatives.size} inisiatif.`);
+        } catch (err) {
+          console.error("Excel import error:", err);
+          showToast(`Ralat membaca fail Excel: ${err.message}`);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function processPastedData() {
+      const text = document.getElementById('importPasteArea')?.value || '';
+      if (!text.trim()) {
+        showToast("Sila tampal teks jadual terlebih dahulu.");
+        return;
+      }
+      const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+      const rows = lines.map(line => line.split('\t'));
+      const parsed = parseRowsToActivities(rows);
+      if (parsed.length > 0) {
+        let targetInit = document.getElementById('importTargetInitiative')?.value || 'auto';
+        let targetId = targetInit !== 'auto' ? parseInt(targetInit) : activeInitiativeId;
+        allInitiativesData[targetId] = parsed;
+        const meta = initiativeMetadata.find(m => m.id === targetId);
+        if (meta) meta.hasData = true;
+        persistDataStore();
+        closeImportModal();
+        populateInitiativeDropdown();
+        renderActiveInitiativeDetail();
+        updateMasterPortfolioView();
+        showToast(`Berjaya memproses ${parsed.length} aktiviti!`);
+      } else {
+        showToast("Format teks tidak dapat diproses. Sila pastikan format lajur bersesuaian.");
+      }
+    }
+
+    function detectMasterInitiativeGroups(rows) {
+      const groups = [];
+      let currentId = null;
+      let currentRows = [];
+
+      for (let i = 0; i < rows.length; i++) {
+        const rowStr = rows[i].join(" ").toUpperCase();
+        const match = rowStr.match(/INISIATIF\s*(\d+)/i);
+
+        if (match) {
+          const id = parseInt(match[1]);
+          if (id >= 1 && id <= 17) {
+            if (currentId !== null && currentRows.length > 0) {
+              groups.push({ id: currentId, rows: currentRows });
+            }
+            currentId = id;
+            currentRows = [rows[i]];
+            continue;
+          }
+        }
+
+        if (currentId !== null) {
+          currentRows.push(rows[i]);
+        }
+      }
+
+      if (currentId !== null && currentRows.length > 0) {
+        groups.push({ id: currentId, rows: currentRows });
+      }
+
+      return groups;
+    }
+
+    function parseRowsToActivities(rows) {
+      if (!rows || rows.length < 1) return [];
+
+      let headerRowIndex = -1;
+      let colMap = { bil: -1, name: -1, cost: -1, start: -1, end: -1, actStart: -1, actEnd: -1, days: -1, status: -1 };
+
+      for (let i = 0; i < Math.min(rows.length, 12); i++) {
+        const r = rows[i].map(c => String(c || '').toLowerCase().trim());
+        const hasAktiviti = r.some(c => c.includes('aktiviti') || c.includes('inisiatif') || c.includes('nama') || c.includes('task') || c.includes('milestone') || c.includes('perkara'));
+        
+        if (hasAktiviti) {
+          headerRowIndex = i;
+          r.forEach((col, idx) => {
+            if (col.includes('bil') || col === 'no' || col === 'no.') colMap.bil = idx;
+            else if (col.includes('aktiviti') || col.includes('task') || col.includes('milestone') || col.includes('perkara')) colMap.name = idx;
+            else if (col.includes('kos') || col.includes('rm') || col.includes('anggaran') || col.includes('peruntukan') || col.includes('budget')) colMap.cost = idx;
+            else if ((col.includes('sasaran') || col.includes('plan')) && col.includes('mula')) colMap.start = idx;
+            else if ((col.includes('sasaran') || col.includes('plan')) && (col.includes('tamat') || col.includes('akhir'))) colMap.end = idx;
+            else if ((col.includes('sebenar') || col.includes('laksana')) && col.includes('mula')) colMap.actStart = idx;
+            else if ((col.includes('sebenar') || col.includes('laksana')) && (col.includes('tamat') || col.includes('akhir'))) colMap.actEnd = idx;
+            else if (colMap.start === -1 && (col.includes('mula') || col.includes('start'))) colMap.start = idx;
+            else if (colMap.end === -1 && (col.includes('tamat') || col.includes('end'))) colMap.end = idx;
+            else if (col.includes('tempoh') || col.includes('hari') || col.includes('days')) colMap.days = idx;
+            else if (col.includes('status')) colMap.status = idx;
+          });
+          break;
+        }
+      }
+
+      const startIndex = headerRowIndex >= 0 ? headerRowIndex + 1 : 0;
+      const parsed = [];
+
+      for (let i = startIndex; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || r.length === 0) continue;
+
+        let name = "";
+        if (colMap.name !== -1 && r[colMap.name]) {
+          name = String(r[colMap.name]).trim();
+        } else if (r.length >= 2 && isNaN(r[1]) && String(r[1]).trim().length > 3) {
+          name = String(r[1]).trim();
+        } else if (r.length >= 1 && isNaN(r[0]) && String(r[0]).trim().length > 3) {
+          name = String(r[0]).trim();
+        }
+
+        if (!name || name.toLowerCase().startsWith('jumlah') || name.toLowerCase().startsWith('total') || name.toUpperCase().startsWith('INISIATIF')) {
+          continue;
+        }
+
+        let cost = 0;
+        if (colMap.cost !== -1 && r[colMap.cost] !== undefined) {
+          cost = parseFloat(String(r[colMap.cost]).replace(/[^0-9.]/g, '')) || 0;
+        }
+
+        let days = 30;
+        if (colMap.days !== -1 && r[colMap.days]) {
+          days = parseInt(String(r[colMap.days]).replace(/[^0-9]/g, '')) || 30;
+        }
+
+        let status = "BELUM MULA";
+        if (colMap.status !== -1 && r[colMap.status]) {
+          const s = String(r[colMap.status]).toUpperCase().trim();
+          if (s.includes('SELESAI') || s.includes('SIAP') || s.includes('COMPLETED') || s.includes('DONE')) {
+            status = "SELESAI";
+          } else if (s.includes('LAKSANA') || s.includes('PROG') || s.includes('SEDANG') || s.includes('IN PROGRESS')) {
+            status = "DALAM PELAKSANAAN";
+          }
+        }
+
+        const sasaranMula = colMap.start !== -1 ? parseExcelDateValue(r[colMap.start]) : "";
+        const sasaranTamat = colMap.end !== -1 ? parseExcelDateValue(r[colMap.end]) : "";
+        const laksanaMula = colMap.actStart !== -1 ? parseExcelDateValue(r[colMap.actStart]) : "";
+        const laksanaTamat = colMap.actEnd !== -1 ? parseExcelDateValue(r[colMap.actEnd]) : "";
+
+        if (sasaranMula && sasaranTamat && days === 30) {
+          const d1 = new Date(sasaranMula);
+          const d2 = new Date(sasaranTamat);
+          if (!isNaN(d1) && !isNaN(d2)) {
+            const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+            if (diff > 0) days = diff;
+          }
+        }
+
+        const weeks = {};
+        timelineWeekKeys.forEach(wk => {
+          r.forEach(cell => {
+            if (typeof cell === 'string' && (cell.toUpperCase() === wk || cell === '1' || cell === '✓' || cell === 'x' || cell === 'X')) {
+              weeks[wk] = true;
+            }
+          });
+        });
+
+        parsed.push({
+          bil: parsed.length + 1,
+          aktiviti: name,
+          kos: cost,
+          sasaranMula: sasaranMula,
+          sasaranTamat: sasaranTamat,
+          laksanaMula: laksanaMula,
+          laksanaTamat: laksanaTamat,
+          tempohRancang: days,
+          tempohSelesai: status === 'SELESAI' ? days : 0,
+          peratusRancang: 0.1,
+          peratusSemasa: status === 'SELESAI' ? 0.1 : 0,
+          status: status,
+          weeks: weeks
+        });
+      }
+
+      const totalDays = parsed.reduce((sum, t) => sum + t.tempohRancang, 0);
+      if (totalDays > 0) {
+        parsed.forEach(t => {
+          t.peratusRancang = t.tempohRancang / totalDays;
+          t.peratusSemasa = t.status === 'SELESAI' ? t.peratusRancang : (t.status === 'DALAM PELAKSANAAN' ? t.peratusRancang * 0.5 : 0);
+        });
+      }
+
+      return parsed;
+    }
+
+    function resetToSampleData() {
+      localStorage.removeItem('coe_ai_portfolio_data');
+      initiativeMetadata.forEach(meta => {
+        if (meta.id === 1) {
+          allInitiativesData[meta.id] = JSON.parse(JSON.stringify(inisiatif1Tasks));
+          meta.hasData = true;
+        } else {
+          allInitiativesData[meta.id] = generateStandardTemplate(meta);
+          meta.hasData = false;
+        }
+      });
+      closeImportModal();
+      populateInitiativeDropdown();
+      renderActiveInitiativeDetail();
+      updateMasterPortfolioView();
+      showToast("Data telah ditetapkan semula ke keadaan asal.");
+    }
+
+    function exportCurrentCSV() {
+      const meta = initiativeMetadata.find(m => m.id === activeInitiativeId) || initiativeMetadata[0];
+      const tasks = allInitiativesData[activeInitiativeId] || [];
+
+      let csv = "data:text/csv;charset=utf-8,";
+      csv += `Pelaporan Inisiatif COE AI: ${meta.code} - ${meta.title}\n`;
+      csv += "Bil,Aktiviti,Kos (RM),Sasaran Mula,Sasaran Tamat,Laksana Mula,Laksana Tamat,Tempoh (Hari),Pemberat %,Status\n";
+
+      tasks.forEach(t => {
+        csv += [
+          t.bil,
+          `"${t.aktiviti.replace(/"/g, '""')}"`,
+          t.kos,
+          t.sasaranMula,
+          t.sasaranTamat,
+          t.laksanaMula,
+          t.laksanaTamat,
+          t.tempohRancang,
+          ((t.peratusRancang || 0) * 100).toFixed(2),
+          t.status
+        ].join(",") + "\n";
+      });
+
+      const encodedUri = encodeURI(csv);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Laporan_${meta.code.replace(/\s+/g, '_')}_COE_AI.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast(`Laporan CSV bagi ${meta.code} dimuat turun!`);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+      }, 2500);
+    }
+
+    // BOOTSTRAP APPLICATION
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        initDataStore();
+        populateInitiativeDropdown();
+        populateImportTargetDropdown();
+        initPortfolioCharts();
+        initDetailCharts();
+        renderActiveInitiativeDetail();
+        updateMasterPortfolioView();
+      } catch (err) {
+        console.error("Initialization error:", err);
+      }
+    });
+  </script>
+</body>
+</html>
